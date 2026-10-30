@@ -1,20 +1,49 @@
 import httpx
 import re
+import time
 from aiogram import Router, F
 import asyncio
+import ssl
 router = Router()
 
-CBR_URL = "https://www.cbr-xml-daily.ru/daily_json.js"
+CBR_URL = "https://api.tinkoff.ru/v1/currency_rates?from=CNY&to=RUB"
 DOLLAR_URL = "https://open.er-api.com/v6/latest/USD"
 FALLBACK = "📈"
 CUSTOM_RATE_ID = "5278751923338490157"
 BAKSI_CASTOM_ID = "5409048419211682843"
 
+RATE_CATEGORY = "DebitCardsTransfers"  # поменяй под свой способ оплаты
+CACHE_TTL = 600  # 10 минут
+RATE = 1.00
+
+
+_ssl_ctx = ssl.create_default_context(cafile="ca_bundle.pem")
+_cache = {"value": None, "ts": 0.0}
+
+
 async def cursik() -> float:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(CBR_URL)
-        data = response.json()
-        return data["Valute"]["CNY"]["Value"]
+    now = time.time()
+    if _cache["value"] is not None and now - _cache["ts"] < CACHE_TTL:
+        return _cache["value"]
+
+    try:
+        async with httpx.AsyncClient(verify=_ssl_ctx, timeout=30) as client:
+            response = await client.get(CBR_URL)
+            response.raise_for_status()
+            rates = response.json()["payload"]["rates"]
+
+        for rate in rates:
+            if rate["category"] == RATE_CATEGORY:
+                value = rate["sell"] * RATE
+                _cache["value"] = rate["sell"]
+                _cache["ts"] = now
+                return value
+        raise ValueError(f"Категория {RATE_CATEGORY} не найдена")
+    except Exception:
+        # если банк недоступен, отдаём последний известный курс
+        if _cache["value"] is not None:
+            return _cache["value"]
+        raise
 
 
 async def baksik() -> float:
@@ -51,7 +80,7 @@ async def vvod_yanei(message):
     results = []
     for cena in spisok_cen:
         price_rub = int(cena * rate)
-        final = int(price_rub * (1.05 if price_rub >= 15000 else 1.07))
+        final = int(price_rub * (1.08 if price_rub >= 15000 else 1.10))
         results.append(final)
 
     total_yuan = sum(spisok_cen)
