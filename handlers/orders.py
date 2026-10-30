@@ -1,5 +1,6 @@
 import httpx
-from aiogram import Router
+import re
+from aiogram import Router, F
 router = Router()
 
 CBR_URL = "https://www.cbr-xml-daily.ru/daily_json.js"
@@ -24,27 +25,23 @@ async def baksik() -> float:
 customid = "5231449120635370684"
 
 
-@router.message()
+@router.message(F.text)
 async def vvod_yanei(message):
-    text = message.text.strip().replace(",", ".")
-    spisok_cen = []
-    try:
-        for i in text.split():
-            spisok_cen.append(int(i))
-    except ValueError:
+    text = message.text.replace(",", ".")
+    spisok_cen = [float(x) for x in re.findall(r"\d+(?:\.\d+)?", text)]
+
+    if not spisok_cen:
         await message.answer("Пожалуйста, введите числа. Например: 500 1200 300")
         return
 
-    if not spisok_cen:
-        await message.answer("Не нашёл ни одной цены.")
-        return
-
+    # курс нужно получить ДО цикла расчёта
     try:
         rate = await cursik()
     except Exception as e:
         await message.answer("Обновление курса, попробуйте позже")
         print(f"ОШИБКА КУРСА: {type(e).__name__}: {e}")
         return
+
 
     results = []
     for cena in spisok_cen:
@@ -60,4 +57,4 @@ async def vvod_yanei(message):
                          f"<tg-emoji emoji-id=\"{CUSTOM_RATE_ID}\">{FALLBACK}</tg-emoji> {total_yuan}\n"
                          f"<tg-emoji emoji-id=\"{customid}\">{FALLBACK}</tg-emoji> {total_rub}\n"
                          f"<tg-emoji emoji-id=\"{BAKSI_CASTOM_ID}\">{FALLBACK}</tg-emoji> {round(total_yuan / await baksik(), 0) }\n"
-                         "Для оформления заказа проследуйте далее")
+                         "Для оформления заказа обращайтесь к администратору: @dnlqa")
