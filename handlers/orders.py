@@ -1,6 +1,7 @@
 import httpx
 import re
 from aiogram import Router, F
+import asyncio
 router = Router()
 
 CBR_URL = "https://www.cbr-xml-daily.ru/daily_json.js"
@@ -24,6 +25,10 @@ async def baksik() -> float:
 
 customid = "5231449120635370684"
 
+async def get_rates() -> tuple[float, float]:
+    cny_rub, usd_cny = await asyncio.gather(cursik(), baksik())
+    return cny_rub, usd_cny
+
 
 @router.message(F.text)
 async def vvod_yanei(message):
@@ -36,7 +41,7 @@ async def vvod_yanei(message):
 
     # курс нужно получить ДО цикла расчёта
     try:
-        rate = await cursik()
+        rate, usd_cny = await get_rates()
     except Exception as e:
         await message.answer("Обновление курса, попробуйте позже")
         print(f"ОШИБКА КУРСА: {type(e).__name__}: {e}")

@@ -95,7 +95,7 @@ async def otzivi(message):
 @router.message(F.text.lower() == "контакты")
 async def contacts(message):
     await message.answer("Если у вас остались вопросы:\n" 
-                         "1)По работе ТГ бота:\n"
+                         "1)В случае проблем с работой бота:\n"
                           "@etiimena\n" 
                           "2)По оформлению заказа:\n"
                           "@dnlqa")
