@@ -21,14 +21,14 @@ LOKL = "5402498632739996967"
 BARBOS = "5251203410396458957"
 NEKTO = "5208615751639903398"
 FINAL = "5228991918305726190"
+THE_LAST_OF_US = "5303214794336125778"
 
 def reply_keyoard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Калькулятор цены")],
             [KeyboardButton(text= "Курс юаня"), KeyboardButton(text="Помощь")],
-            [KeyboardButton(text="Отзывы"), KeyboardButton(text="Контакты")],
-            [KeyboardButton(text="О нас")]
+            [KeyboardButton(text="Отзывы"), KeyboardButton(text="О нас")],
         ],
         resize_keyboard=True,
     )
@@ -60,6 +60,13 @@ async def start(message):
         "\nМы занимаемся выкупом предметов с китайской площадки BUFF\n"
         "\nРаботаем с самой низкой комиссией на рынке\n"
         "\n"
+        "\n"
+        "Если у вас остались вопросы:\n" 
+                         "1)В случае проблем с работой бота:\n"
+                          "@etiimena\n"
+        "\n"
+                          "2)По оформлению заказа:\n"
+                          "@dnlqa"
         "\n\n /help - для помощи",
         reply_markup = reply_keyoard(),
 
@@ -72,7 +79,8 @@ async def help(message):
                          f"\n<tg-emoji emoji-id=\"{BARBOS}\">{FALLBACK}</tg-emoji> /info - о нашей работе\n"
                          f"\n<tg-emoji emoji-id=\"{NEKTO}\">{FALLBACK}</tg-emoji> /contacts - наши контакты\n"
                          f"\n<tg-emoji emoji-id=\"{MONEY}\">{FALLBACK}</tg-emoji> /exchange - официальный курс юаня к рублю\n"
-                         f"\n<tg-emoji emoji-id=\"{HELP}\">{FALLBACK}</tg-emoji> /help - открыть меню доступных комманд")
+                         f"\n<tg-emoji emoji-id=\"{HELP}\">{FALLBACK}</tg-emoji> /help - открыть меню доступных комманд\n"
+                         f"\n<tg-emoji emoji-id=\"{THE_LAST_OF_US}\">{FALLBACK}</tg-emoji> /help - открыть меню доступных комманд\n")
 
 @router.message(Command("exchange"))
 @router.message(F.text.lower() == "курс юаня")

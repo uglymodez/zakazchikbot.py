@@ -12,7 +12,7 @@ FALLBACK = "📈"
 CUSTOM_RATE_ID = "5278751923338490157"
 BAKSI_CASTOM_ID = "5409048419211682843"
 
-RATE_CATEGORY = "DebitCardsTransfers"  # поменяй под свой способ оплаты
+RATE_CATEGORY = "Swft"  # поменяй под свой способ оплаты
 CACHE_TTL = 600  # 10 минут
 RATE = 1.00
 
@@ -30,17 +30,20 @@ async def cursik() -> float:
         async with httpx.AsyncClient(verify=_ssl_ctx, timeout=30) as client:
             response = await client.get(CBR_URL)
             response.raise_for_status()
-            rates = response.json()["payload"]["rates"]
+            payload = response.json()["payload"]
+            rates = payload["rates"]
+
+        print(f"КУРС: lastUpdate={payload['lastUpdate']['milliseconds']}, now={int(now * 1000)}")
 
         for rate in rates:
             if rate["category"] == RATE_CATEGORY:
                 value = rate["sell"] * RATE
-                _cache["value"] = rate["sell"]
+                _cache["value"] = value
                 _cache["ts"] = now
                 return value
         raise ValueError(f"Категория {RATE_CATEGORY} не найдена")
-    except Exception:
-        # если банк недоступен, отдаём последний известный курс
+    except Exception as e:
+        print(f"ОШИБКА ОБНОВЛЕНИЯ КУРСА: {type(e).__name__}: {e}")
         if _cache["value"] is not None:
             return _cache["value"]
         raise
@@ -90,5 +93,5 @@ async def vvod_yanei(message):
     await message.answer("Итоговая стоимость всех товаров:\n"
                          f"<tg-emoji emoji-id=\"{CUSTOM_RATE_ID}\">{FALLBACK}</tg-emoji> {total_yuan}\n"
                          f"<tg-emoji emoji-id=\"{customid}\">{FALLBACK}</tg-emoji> {total_rub}\n"
-                         f"<tg-emoji emoji-id=\"{BAKSI_CASTOM_ID}\">{FALLBACK}</tg-emoji> {round(total_yuan / await baksik(), 0) }\n"
+                         f"<tg-emoji emoji-id=\"{BAKSI_CASTOM_ID}\">{FALLBACK}</tg-emoji> {round(total_yuan / usd_cny, 0) }\n"
                          "Для оформления заказа обращайтесь к администратору: @dnlqa")
