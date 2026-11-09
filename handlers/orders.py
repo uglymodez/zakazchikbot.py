@@ -92,6 +92,6 @@ async def vvod_yanei(message):
 
     await message.answer("Итоговая стоимость всех товаров:\n"
                          f"<tg-emoji emoji-id=\"{CUSTOM_RATE_ID}\">{FALLBACK}</tg-emoji> {total_yuan}\n"
-                         f"<tg-emoji emoji-id=\"{customid}\">{FALLBACK}</tg-emoji> {total_rub}\n"
+                         f"<tg-emoji emoji-id=\"{customid}\">{FALLBACK}</tg-emoji> {total_rub * 1.04}\n"
                          f"<tg-emoji emoji-id=\"{BAKSI_CASTOM_ID}\">{FALLBACK}</tg-emoji> {round(total_yuan / usd_cny, 0) }\n"
                          "Для оформления заказа обращайтесь к администратору: @dnlqa")
