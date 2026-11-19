@@ -12,6 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # папка bottgbaf
 IMG_DIR = BASE_DIR / "images"
 
 INFO_PHOTO = FSInputFile(IMG_DIR / "info1.jpeg")
+FIRST_STEP = FSInputFile(IMG_DIR / "step1.jpeg")
+SECOND_STEP = FSInputFile(IMG_DIR / "step2.jpeg")
 
 MONEY = "5370852450414644361"
 HELP = "5238025132177369293"
@@ -29,6 +31,7 @@ def reply_keyoard():
             [KeyboardButton(text="Калькулятор цены")],
             [KeyboardButton(text= "Курс юаня"), KeyboardButton(text="Помощь")],
             [KeyboardButton(text="Отзывы"), KeyboardButton(text="О нас")],
+            [KeyboardButton(text="Инструкция по регистрации на BUFF")],
         ],
         resize_keyboard=True,
     )
@@ -38,12 +41,20 @@ def get_main_inline_keyboard():
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text = "Для перехода в основное меню нажмите", callback_data = "info_more")],
+            [InlineKeyboardButton(text = "Следующий шаг", callback_data = "step1")],
         ]
     )
     return keyboard
 
 @router.callback_query(F.data == "info_more")
 async def proccess_more_info(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.delete()
+    await start(callback.message)
+
+
+@router.callback_query(F.data == "step1")
+async def proccess_step1(callback: CallbackQuery):
     await callback.answer()
     await callback.message.delete()
     await start(callback.message)
@@ -114,3 +125,14 @@ async def calculate(message):
     await message.answer("Можете вводить цену предмета или предметов в юанях:",
                          reply_markup = get_main_inline_keyboard()
                          )
+
+
+@router.message(Command("Instruction"))
+@router.message(F.text.lower() == "инструкция по регистрации на buff")
+async def instruction(message):
+    await message.answer(
+        photo = FIRST_STEP,
+        caption=f"<tg-emoji emoji-id=\"{FINAL}\">{FALLBACK}</tg-emoji>"
+        "Для начала в вашем браузере введите название сайта",
+                         reply_markup = get_main_inline_keyboard()
+    )
